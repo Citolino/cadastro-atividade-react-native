@@ -22,8 +22,12 @@ import {
 import styles from './styles'
 import DropDownPicker from 'react-native-dropdown-picker';
 import { StatusBar } from 'expo-status-bar';
+import {useStatus} from '../hook/statusglobal'
+
 export function Atividade() {
   const [id, setId] = useState("");
+  const {recarregaTelaGlobal, setRecarregaTelaGlobal} = useStatus(false);
+  
   const [tipoAtividade, setTipoAtividade] = useState("");
   const [descricaoAtividade, setDescricaoAtividade] = useState("");
   const [localAtividade, setLocalAtividade] = useState("");
@@ -31,7 +35,7 @@ export function Atividade() {
   const [horaEntrega, setHoraEntrega] = useState("");
   const [statusAtividade, setStatusAtividade] = useState("");
   const [atividadeList, setAtividadeList] = useState([]);
-  const [recarregaTela, setRecarregaTela] = useState(true);
+  const [recarregaTela, setRecarregaTela] = useState(!recarregaTela);
   const [criarTabela, setCriarTabela] = useState(false);
   const [items, setItems] = useState([
     { label: 'Pendente', value: 'Pendente' },
@@ -43,7 +47,6 @@ export function Atividade() {
   const [value, setValue] = useState(null);
   const [open2, setOpen2] = useState(false);
   async function processamentoUseEffect() {
-
     if (!criarTabela) {
       setCriarTabela(true);
       await createTable();
@@ -56,6 +59,10 @@ export function Atividade() {
     () => {
       processamentoUseEffect();
     }, [recarregaTela]);
+    useEffect(
+      () => {
+        processamentoUseEffect();
+      }, [recarregaTelaGlobal]);
 
   async function carregaDados() {
     try {
@@ -67,7 +74,7 @@ export function Atividade() {
       for (let i = 0; i < tipoAtividade.length; i++) {
         let obj = {
           label: tipoAtividade[i].tipoAtividade,
-          value: tipoAtividade[i].tipoAtividade
+          value: tipoAtividade[i].id
         }
         list.push(obj);
       }
@@ -167,6 +174,7 @@ export function Atividade() {
       Keyboard.dismiss();
       limparCampos();
       setRecarregaTela(true);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     }
     catch (error) {
       Alert.alert("Erro ao salvar: " + error.toString());
@@ -180,7 +188,7 @@ export function Atividade() {
       const tipoAtividade = atividadeList.find(atividade => atividade.id == identificador);
       if (tipoAtividade != null) {
         setId(tipoAtividade.id);
-        setTipoAtividade(tipoAtividade.tipoAtividade);
+        setTipoAtividade(tipoAtividade.idTipo);
         setDescricaoAtividade(tipoAtividade.descricaoAtividade);
         setDataEhora(tipoAtividade.dataEhora);
         setLocalAtividade(tipoAtividade.localAtividade);
@@ -221,6 +229,7 @@ export function Atividade() {
       Alert.alert('Atividade apagada com sucesso!!!', 'você deletou a atividade selecionada!');
       limparCampos();
       setRecarregaTela(true);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     } catch (e) {
       Alert.alert(e);
     }
@@ -247,6 +256,7 @@ export function Atividade() {
       await excluiTodasAtividade();
       Alert.alert('Já era apagou foi é tudo...', 'Você apagou todas as atividades!');
       setRecarregaTela(!recarregaTela);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     }
     catch (e) {
       Alert.alert(e);

@@ -11,7 +11,7 @@ import {
   alterarStatus,
   dropTable
 } from '../services/dbAtividade';
-
+import {useStatus} from '../hook/statusglobal'
 import styles from './styles'
 export function Home() {
   const [id, setId] = useState("");
@@ -20,7 +20,8 @@ export function Home() {
   const [AtividadeListFiltrado, setAtividadeListFiltrado] = useState([]);
   const [recarregaTela, setRecarregaTela] = useState(true);
   const [criarTabela, setCriarTabela] = useState(false);
-
+  const [filtro, setTipoFiltro] = useState("Todos");
+  const {recarregaTelaGlobal, setRecarregaTelaGlobal} = useStatus(false);
 
 
   async function processamentoUseEffect() {
@@ -38,14 +39,19 @@ export function Home() {
       processamentoUseEffect();
     }, [recarregaTela]);
 
+    useEffect(
+      () => {
+        processamentoUseEffect();
+      }, [recarregaTelaGlobal]);
+
   async function carregaDados() {
     try {
       let Atividade = await obtemTodasAtividades();
-      console.log(Atividade);
+    
       setAtividadeList(Atividade);
+      const atividadeAux = Atividade.filter(atividade => atividade.statusAtividade == filtro || filtro=="Todos");
 
-
-      setAtividadeListFiltrado(Atividade);
+      setAtividadeListFiltrado(atividadeAux);
       setRecarregaTela(true);
     } catch (e) {
       Alert.alert(e.toString());
@@ -53,8 +59,9 @@ export function Home() {
   }
   function pendente() {
     try {
-      console.log('teste');
+   
       const atividadeAux = AtividadeList.filter(atividade => atividade.statusAtividade == 'Pendente');
+      setTipoFiltro("Pendente");
       setAtividadeListFiltrado(atividadeAux);
      
     } catch (e) {
@@ -63,9 +70,10 @@ export function Home() {
   }
   function concluido() {
     try {
-      console.log(AtividadeList);
+     
 
       const atividadeAux = AtividadeList.filter(atividade => atividade.statusAtividade == 'Concluido');
+      setTipoFiltro("Concluido");
       setAtividadeListFiltrado(atividadeAux);
       
     } catch (e) {
@@ -74,8 +82,9 @@ export function Home() {
   }
   function todos() {
     try {
+      setTipoFiltro("Todos");
       setAtividadeListFiltrado(AtividadeList);
-      setRecarregaTela(!setRecarregaTela);
+      setRecarregaTela(!recarregaTela);
     } catch (e) {
       Alert.alert(e.toString());
     }
@@ -101,7 +110,8 @@ export function Home() {
       await alterarStatus(identificador,statusTroca);
       Keyboard.dismiss();
       Alert.alert('Status alerado com sucesso!!!', 'você alterou o status da atividade selecionada!');
-      setRecarregaTela(!setRecarregaTela);
+      setRecarregaTela(!recarregaTela);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     } catch (e) {
       Alert.alert(e);
     }

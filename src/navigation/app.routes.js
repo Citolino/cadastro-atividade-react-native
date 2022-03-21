@@ -13,19 +13,20 @@ export function AppRoutes() {
     <NavigationContainer>
       <Tab.Navigator screenOptions={{headerTitleAlign:'center'}}>
       <Tab.Screen 
-        name="Tipo Atividade" 
-        component={TipoAtividade}
-        options={{tabBarIcon: () => {
-          return <MaterialCommunityIcons name="format-list-bulleted-type" size={24} color="black" />
-        }}}
-         />
-        <Tab.Screen 
         name="Inicio" 
         component={Home} 
         options={{tabBarIcon: () => {
           return <Feather name="home" size={24} color="black" />
         }}}
         />
+      <Tab.Screen 
+        name="Tipo Atividade" 
+        component={TipoAtividade}
+        options={{tabBarIcon: () => {
+          return <MaterialCommunityIcons name="format-list-bulleted-type" size={24} color="black" />
+        }}}
+         />
+        
         <Tab.Screen 
         name=" Atividade" 
         component={Atividade}

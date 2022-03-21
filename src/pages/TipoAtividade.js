@@ -14,7 +14,10 @@ import {
   adicionaTipoAtividade,
   dropTable
 } from '../services/dbTipoAtividade';
-
+import {
+  obtemTodasAtividades
+} from '../services/dbAtividade';
+import {useStatus} from '../hook/statusglobal'
 import styles from './styles'
 export function TipoAtividade() {
   const [id, setId] = useState("");
@@ -22,8 +25,8 @@ export function TipoAtividade() {
   const [tipoAtividadeList, setTipoAtividadeList] = useState([]);
   const [recarregaTela, setRecarregaTela] = useState(true);
   const [criarTabela, setCriarTabela] = useState(false);
-
-
+  const [AtividadeList, setAtividadeList] = useState([]);
+  const {recarregaTelaGlobal, setRecarregaTelaGlobal} = useStatus(false);
 
   async function processamentoUseEffect() {
 
@@ -74,6 +77,12 @@ export function TipoAtividade() {
         Alert.alert('Erro', 'Tipo atividade deve ser inserido!');
         return;
       }
+      const teste = tipoAtividadeList.find(atividade => atividade.tipoAtividade.toString().toUpperCase() == tipoAtividade.toString().toUpperCase());
+      if (teste != null){
+        Alert.alert('Erro', 'Tipo atividade ja cadastrada!');
+        return;
+      }
+
       if (novoRegistro) {
         let resposta = (await adicionaTipoAtividade(objTipoAtividade));
 
@@ -93,6 +102,7 @@ export function TipoAtividade() {
       Keyboard.dismiss();
       limparCampos();
       setRecarregaTela(true);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     }
     catch (error) {
       Alert.alert("Erro ao salvar: " + error.toString());
@@ -138,11 +148,19 @@ export function TipoAtividade() {
   }
   async function efetivadeletarTipoAtividade(identificador) {
     try {
+      let atividadeList = await obtemTodasAtividades();
+      const teste = atividadeList.find(atividade => atividade.idTipo.toString().toUpperCase() == identificador);
+      if (teste != null){
+        Alert.alert('Erro', 'Tipo atividade cadastrada para uma atividade!');
+        return;
+      }
+     
       await excluiTipoAtividade(identificador);
       Keyboard.dismiss();
       Alert.alert('Tipo Atividade apagado com sucesso!!!', 'você deletou o tipo de atividade selecionado!');
       limparCampos();
       setRecarregaTela(true);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     } catch (e) {
       Alert.alert(e);
     }
@@ -166,9 +184,24 @@ export function TipoAtividade() {
 
   async function efetivaExclusao() {
     try {
+
+      let atividadeList = await obtemTodasAtividades();
+     
+      let tipoatividadeList = await obtemTodosTiposAtividades();
+
+      for (let i = 0; i < tipoatividadeList.length; i++) {
+        
+        const teste = atividadeList.find(atividade => atividade.idTipo.toString().toUpperCase() ==  tipoatividadeList[i].id);
+        if (teste != null){
+          Alert.alert('Erro', `Tipo atividade cadastrada para uma atividade! Tipo atividade : ${tipoatividadeList[i].tipoAtividade}`);
+          return;
+        }
+      }
+      
       await excluiTodosTipoAtividade();
       Alert.alert('Já era apagou foi é tudo...', 'Você apagou todos os tipos de atividades!');
       setRecarregaTela(!recarregaTela);
+      setRecarregaTelaGlobal(!recarregaTelaGlobal);
     }
     catch (e) {
       Alert.alert(e);
